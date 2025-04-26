@@ -1,0 +1,50 @@
+<div class="log-container">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+    <div class="heading">Syngene Audit Report</div>
+    <div class="download-section" style="display: flex; gap: 15px; align-items: center;">
+      <div class="download-section">
+        <div>
+          <input style="margin-right: 15px;" placeholder="From Date" class="textbox-n options-item" type="text"
+            onfocus="(this.type='datetime-local')" onblur="(this.type='text')" [(ngModel)]="fromDate" id="fromDate" />
+        </div>
+        <div>
+          <input style="margin-right: 15px;" placeholder="To Date" class="textbox-n options-item" type="text"
+            onfocus="(this.type='datetime-local')" onblur="(this.type='text')" [(ngModel)]="toDate" id="toDate" />
+        </div>
+        <div>
+          <button (click)="downloadAuditReport()" class="download-btn" [disabled]="!isValidDateRange()">
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message" style="color: red; margin-top: 10px; text-align: center;">
+    {{ errorMessage }}
+  </div>
+
+  <!-- 🌟 Add Table Here for Stored Reports -->
+  <div style="margin-top: 20px; overflow-y: auto; height: 350px;">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Report Name</th>
+          <th>Generated On</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let report of storedReports">
+          <td>{{ report.id }}</td>
+          <td>{{ report.reportName }}</td>
+          <td>{{ report.generatedOn | date: 'dd-MMM-yyyy HH:mm' }}</td>
+          <td>
+            <img (click)="viewReport(report.id)" class="btn-img" src="../../../assets/images/view.png" title="View">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
