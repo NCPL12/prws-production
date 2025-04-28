@@ -32,6 +32,7 @@
     import java.time.LocalDateTime;
     import java.io.ByteArrayInputStream;
     import java.util.List;
+    import java.awt.Color;
 
     @Component
     @Slf4j
@@ -100,7 +101,36 @@
                 log.warn("Error generating dynamic report heading, using fallback.", e);
                 return "Report";
             }
+        }private void addColorLegend(Document document) throws DocumentException {
+            PdfPTable legendTable = new PdfPTable(2);
+            legendTable.setWidthPercentage(30f);
+            legendTable.setSpacingBefore(10);
+            legendTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            legendTable.setWidths(new int[]{1, 4}); // 1 part color box, 4 part text
+
+            Font labelFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Font.NORMAL);
+
+            addLegendItem(legendTable, Color.RED, "Above Range");
+            addLegendItem(legendTable, Color.white, "Within Range");
+            addLegendItem(legendTable, Color.CYAN, "Below Range");
+           // Light green for OK
+
+            document.add(legendTable);
         }
+
+        private void addLegendItem(PdfPTable table, Color color, String label) {
+            PdfPCell colorCell = new PdfPCell();
+            colorCell.setBackgroundColor(color);
+            colorCell.setFixedHeight(10f); // Small box
+            colorCell.setBorder(Rectangle.NO_BORDER);
+            table.addCell(colorCell);
+
+            PdfPCell labelCell = new PdfPCell(new Phrase(label, FontFactory.getFont(FontFactory.HELVETICA, 9)));
+            labelCell.setBorder(Rectangle.NO_BORDER);
+            labelCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            table.addCell(labelCell);
+        }
+
         public Map<String, Map<String, Map<String, Object>>> calculateStatistics(Long templateId, String fromDate, String toDate) {
             List<Map<String, Object>> data = reportDataService.generateReportData(templateId, fromDate, toDate);
 
@@ -280,6 +310,8 @@
     // ✅ Add the final stats table to document
             document.add(statisticsTable);
 
+            addColorLegend(document);
+
     // ✅ NOW close the document
             document.close();
 
@@ -407,7 +439,7 @@
 
             // Label cell
             PdfPCell labelCell = new PdfPCell(new Phrase(label, fontBold));
-            labelCell.setBackgroundColor(CMYKColor.YELLOW);
+//            labelCell.setBackgroundColor(CMYKColor.YELLOW);
             labelCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             labelCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             if (hasTimestamp) {
@@ -425,7 +457,7 @@
                 }
 
                 PdfPCell valueCell = new PdfPCell(new Phrase(valueStr, fontNormal));
-                valueCell.setBackgroundColor(CMYKColor.YELLOW);
+//                valueCell.setBackgroundColor(CMYKColor.YELLOW);
                 valueCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                 valueCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 table.addCell(valueCell);
@@ -447,7 +479,7 @@
                     }
 
                     PdfPCell dateCell = new PdfPCell(new Phrase(dateStr, fontNormal));
-                    dateCell.setBackgroundColor(CMYKColor.YELLOW);
+//                    dateCell.setBackgroundColor(CMYKColor.YELLOW);
                     dateCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
                     table.addCell(dateCell);
@@ -690,7 +722,6 @@
                 }
             }
         }
-
         public List<ReportDTO> getAllReports() {
             String sql = "SELECT id, name, from_date, to_date, generated_by, generated_date, is_approved, approved_by, approved_date, assigned_review, reviewed_by, review_date, is_approver_required, assigned_approver FROM stored_reports ORDER BY generated_date DESC";
             return jdbcTemplate.query(sql, (rs, rowNum) -> new ReportDTO(
@@ -777,8 +808,7 @@
                 float y = pageSize.getBottom() + 73;
                 reviewTable.writeSelectedRows(0, -1, x, y, canvas);
             }
-
-
+            
             pdfStamper.close();
             pdfReader.close();
 
